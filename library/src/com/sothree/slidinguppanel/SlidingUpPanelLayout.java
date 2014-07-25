@@ -66,6 +66,12 @@ public class SlidingUpPanelLayout extends ViewGroup {
     private static final int[] DEFAULT_ATTRS = new int[] {
         android.R.attr.gravity
     };
+    
+    /**
+     * FullScreenOrNot
+     */
+    private boolean mFullScreen = false;
+     
 
     /**
      * Minimum velocity that will be detected as a fling
@@ -614,9 +620,9 @@ public class SlidingUpPanelLayout extends ViewGroup {
             }
 
             int height = layoutHeight;
-            if (child == mMainView && !mOverlayContent && mSlideState != SlideState.HIDDEN) {
+            if (child == mMainView && !mOverlayContent && mSlideState != SlideState.HIDDEN && !mFullScreen) {
                 height -= mPanelHeight;
-            }
+            }   
 
             int childWidthSpec;
             if (lp.width == LayoutParams.WRAP_CONTENT) {
@@ -982,10 +988,12 @@ public class SlidingUpPanelLayout extends ViewGroup {
             // Unless the panel is set to overlay content
             if (!mOverlayContent) {
                 canvas.getClipBounds(mTmpRect);
-                if (mIsSlidingUp) {
-                    mTmpRect.bottom = Math.min(mTmpRect.bottom, mSlideableView.getTop());
-                } else {
-                    mTmpRect.top = Math.max(mTmpRect.top, mSlideableView.getBottom());
+                if(!mFullScreen) {
+                    if (mIsSlidingUp) {
+                        mTmpRect.bottom = Math.min(mTmpRect.bottom, mSlideableView.getTop());
+                    } else {
+                        mTmpRect.top = Math.max(mTmpRect.top, mSlideableView.getBottom());
+                    }
                 }
                 canvas.clipRect(mTmpRect);
             }
@@ -1132,6 +1140,10 @@ public class SlidingUpPanelLayout extends ViewGroup {
     @Override
     public void onRestoreInstanceState(Parcelable state) {
         SavedState ss = (SavedState) state;
+        if(!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
         super.onRestoreInstanceState(ss.getSuperState());
         mSlideState = ss.mSlideState;
     }
